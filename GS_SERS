@@ -1,0 +1,232 @@
+from random import randint
+from time import sleep
+
+
+historico = []
+
+
+def ler_numero(mensagem, minimo=None, maximo=None):
+    while True:
+        try:
+            valor = float(input(mensagem))
+            if minimo is not None and valor < minimo:
+                print(f"Valor invalido. Digite um numero maior ou igual a {minimo}.")
+                continue
+            if maximo is not None and valor > maximo:
+                print(f"Valor invalido. Digite um numero menor ou igual a {maximo}.")
+                continue
+            return valor
+        except ValueError:
+            print("Entrada invalida. Digite apenas numeros.")
+
+
+def cadastrar_leitura_manual():
+    print("\n--- Cadastro manual dos sensores ---")
+    temperatura = ler_numero("Temperatura da nave em graus Celsius: ")
+    energia = ler_numero("Porcentagem de energia (0 a 100): ", 0, 100)
+    comunicacao = int(ler_numero("Comunicacao ativa? Digite 1 para SIM ou 0 para NAO: ", 0, 1))
+    oxigenio = ler_numero("Nivel de oxigenio (0 a 100): ", 0, 100)
+    estabilidade = ler_numero("Estabilidade da nave (0 a 100): ", 0, 100)
+
+    leitura = criar_leitura( temperatura, 
+                            energia, 
+                            comunicacao, 
+                            oxigenio, 
+                            estabilidade, 
+                            "manual" )
+    historico.append(leitura)
+    print("Leitura cadastrada com sucesso.")
+
+
+
+def simular_continuamente():
+    quantidade = int(ler_numero("\nQuantas leituras deseja simular? ", 1, 20))
+    intervalo = ler_numero("Intervalo entre leituras em segundos (0 a 5): ", 0, 5)
+
+    for _ in range(quantidade):
+        simular_leitura()
+        sleep(intervalo)
+
+
+def criar_leitura(temperatura, energia, comunicacao, oxigenio, estabilidade, origem):
+    return {
+        "temperatura": temperatura,
+        "energia": energia,
+        "comunicacao": comunicacao,
+        "oxigenio": oxigenio,
+        "estabilidade": estabilidade,
+        "origem": origem,
+    }
+
+
+def simular_leitura():
+    print("\n--- Simulacao de sensores ---")
+
+    temperatura = randint(10, 110)
+    energia = randint(0, 100)
+    comunicacao = randint(0, 1)
+    oxigenio = randint(50, 100)
+    estabilidade = randint(40, 100)
+
+    leitura = criar_leitura(
+        temperatura,
+        energia,
+        comunicacao,
+        oxigenio,
+        estabilidade,
+        "simulada"
+    )
+
+    historico.append(leitura)
+
+    print("Leitura simulada cadastrada com sucesso.")
+    mostrar_leitura(leitura, len(historico))
+
+
+def analisar_leitura(leitura):
+    alertas = []
+    status_critico = False
+
+    if leitura["temperatura"] > 90:
+        alertas.append("CRITICO: Superaquecimento detectado")
+        alertas.append("IA: Sistema de resfriamento emergencial ativado")
+        status_critico = True
+
+    elif leitura["temperatura"] > 80:
+        alertas.append("ALERTA: Temperatura acima do ideal")
+
+
+    if leitura["energia"] < 10:
+        alertas.append("CRITICO: Nivel de energia extremamente baixo")
+        alertas.append("IA: Modulos secundarios desligados automaticamente")
+        status_critico = True
+
+    elif leitura["energia"] < 20:
+        alertas.append("ALERTA: Economia de energia ativada")
+
+
+    if leitura["comunicacao"] == 0:
+        alertas.append("CRITICO: Falha de comunicacao")
+        alertas.append("IA: Tentativa automatica de reconexao iniciada")
+        status_critico = True
+
+   
+    if leitura["oxigenio"] < 40:
+        alertas.append("CRITICO: Oxigenio em nivel perigoso")
+        alertas.append("IA: Liberacao emergencial de oxigenio ativada")
+        status_critico = True
+
+    elif leitura["oxigenio"] < 60:
+        alertas.append("ALERTA: Nivel de oxigenio abaixo do ideal")
+
+   
+    if leitura["estabilidade"] < 30:
+        alertas.append("CRITICO: Instabilidade estrutural severa")
+        alertas.append("IA: Travamento automatico dos modulos iniciado")
+        status_critico = True
+
+    elif leitura["estabilidade"] < 50:
+        alertas.append("ALERTA: Instabilidade estrutural detectada")
+
+    
+    # STATUS FINAL DA MISSAO
+   
+    if not alertas:
+        alertas.append("IA: Todos os sistemas operando normalmente")
+        alertas.append("STATUS GERAL: OPERACIONAL")
+
+    else:
+        if status_critico:
+            alertas.append("STATUS GERAL: CRITICO")
+        else:
+            alertas.append("STATUS GERAL: ATENCAO")
+
+    return alertas
+
+
+  
+def mostrar_leitura(leitura, indice=None):
+    titulo = f"Leitura {indice}" if indice is not None else "Leitura atual"
+    comunicacao = "Ativa" if leitura["comunicacao"] == 1 else "Inativa"
+
+    print(f"\n{titulo}")
+    print(f"Origem: {leitura['origem']}")
+    print(f"Temperatura: {leitura['temperatura']} C")
+    print(f"Energia: {leitura['energia']}%")
+    print(f"Comunicacao: {comunicacao}")
+    print(f"Oxigenio: {leitura['oxigenio']}%")
+    print(f"Estabilidade: {leitura['estabilidade']}%")
+
+
+def visualizar_status():
+    if not historico:
+        print("\nNenhuma leitura cadastrada.")
+        return
+
+    leitura = historico[-1]
+    mostrar_leitura(leitura)
+
+
+def executar_analise():
+    if not historico:
+        print("\nNenhuma leitura cadastrada para analise.")
+        return
+
+    leitura = historico[-1]
+    mostrar_leitura(leitura)
+    print("\nResultado da analise:")
+    for alerta in analisar_leitura(leitura):
+        print(f"- {alerta}")
+
+
+def exibir_historico():
+    if not historico:
+        print("\nHistorico vazio.")
+        return
+
+    print("\n--- Historico das leituras ---")
+    for indice, leitura in enumerate(historico, start=1):
+        mostrar_leitura(leitura, indice)
+        alertas = analisar_leitura(leitura)
+        print("Alertas:", "; ".join(alertas))
+
+
+def exibir_menu():
+    print("MISSION CONTROL AI")
+    print("Sistema Inteligente de Monitoramento Espacial")
+    print("============================================================")
+    print("1. Inserir dados manualmente")
+    print("2. Simular leitura dos sensores")
+    print("3. Visualizar status atual")
+    print("4. Executar analise")
+    print("5. Historico das leituras")
+    print("6. Simulacao continua dos sensores")
+    print("0. Encerrar sistema")
+
+
+def main():
+    while True:
+        exibir_menu()
+        opcao = input("Escolha uma opcao: ").strip()
+
+        if opcao == "1":
+            cadastrar_leitura_manual()
+        elif opcao == "2":
+            simular_leitura()
+        elif opcao == "3":
+            visualizar_status()
+        elif opcao == "4":
+            executar_analise()
+        elif opcao == "5":
+            exibir_historico()
+        elif opcao == "6":
+            simular_continuamente()
+        elif opcao == "0":
+            print("\nSistema encerrado. Monitoramento finalizado.")
+            break
+        else:
+            print("\nOpcao invalida. Tente novamente.")
+
+
+if __name__ == "__main__":
+    main()
