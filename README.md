@@ -1,4 +1,3 @@
-# mission-control-ai_sers
 
 # Mission Control AI 
 
